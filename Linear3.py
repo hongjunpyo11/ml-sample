@@ -147,3 +147,23 @@ for i, c_rate in enumerate(c_rates):
     ax.plot(x_range, y_pred)
 
 plt.show()
+
+A_values = [result[1] for result in results]
+B_values = [result[2] for result in results]
+C_values = [result[3] for result in results]
+
+# Create a figure and axes
+fig, ax = plt.subplots()
+
+# Plot A, B, and C values
+ax.plot(c_rates, A_values, label='A')
+ax.plot(c_rates, B_values, label='B')
+ax.plot(c_rates, C_values, label='C')
+
+# Add labels and legend
+ax.set_xlabel('c-rate')
+ax.set_ylabel('Value')
+ax.legend()
+
+# Show plot
+plt.show()
