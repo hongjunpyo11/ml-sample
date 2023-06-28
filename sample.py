@@ -1,59 +1,46 @@
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import matplotlib.pyplot as plt
-
-# 데이터셋 준비 및 전처리
-x_data = torch.tensor([[0.], [13.], [25.]])
-y_data = torch.tensor([100.0000, 97.0000, 96.0000])
-
-
-# 모델 정의
-class PolynomialRegressionModel(nn.Module):
+# Define new model
+class ABCModel(nn.Module):
     def __init__(self):
-        super(PolynomialRegressionModel, self).__init__()
-        self.A = nn.Parameter(torch.tensor(0.0))  # A를 모델의 파라미터로 정의
-        self.B = nn.Parameter(torch.tensor(0.0))  # B를 모델의 파라미터로 정의
-        self.C = nn.Parameter(torch.tensor(0.0))  # C를 모델의 파라미터로 정의
+        super(ABCModel, self).__init__()
+        self.fc1 = nn.Linear(6, 3)
 
     def forward(self, x):
-        return 1 - self.A * torch.sqrt(x) - self.B * torch.exp(self.C * x) + self.B
+        x = self.fc1(x)
+        return x
 
+abc_model = ABCModel()
 
-# 손실 함수 정의
-criterion = nn.MSELoss()
+# Prepare data for new model
+x_data = []
+y_data = []
 
-# 모델 및 옵티마이저 초기화
-model = PolynomialRegressionModel()
-optimizer = optim.SGD(model.parameters(), lr=0.001)
+for result in results:
+    c_rate, A, B, C = result
+    x_data.append([c_rate, 25, 1.00, 98.0, 92.0, 0.15])  # Add all conditions here
+    y_data.append([A, B, C])
 
-# 학습 과정
-num_epochs = 1000
+x_data = Variable(torch.tensor(x_data).float())
+y_data = Variable(torch.tensor(y_data).float())
 
-for epoch in range(num_epochs):
-    # Forward pass
-    outputs = model(x_data)
-    loss = criterion(outputs, y_data)
+# Define optimizer and loss function for new model
+optimizer = torch.optim.Adam(abc_model.parameters(), lr=0.001)
+loss_func = nn.MSELoss()
 
-    # Backward pass 및 가중치 업데이트
+# Train new model
+for t in range(10000):
+    prediction = abc_model(x_data)
+    loss = loss_func(prediction, y_data)
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
 
-# A, B, C 값을 확인
-print('Estimated A:', model.A.item())
-print('Estimated B:', model.B.item())
-print('Estimated C:', model.C.item())
+# Test new model
+test_c_rate = Variable(torch.tensor([[0.7, 25, 1.00, 98.0, 92.0, 0.15]]).float())  # Add all conditions here
+test_prediction = abc_model(test_c_rate)
+print(f'c-rate: 0.7, A: {test_prediction[0][0].item()}, B: {test_prediction[0][1].item()}, C: {test_prediction[0][2].item()}')
 
-# 그래프 생성
-x_range = torch.arange(26, 50, 0.1)  # 25보다 큰 값으로 x 범위 설정
-predictions = model(x_range)  # 모델의 예측값 계산
-
-# 데이터셋 그래프
-plt.scatter(x_data, y_data, label='Data')
-# 예측 그래프
-plt.plot(x_range, predictions.detach().numpy(), color='red', label='Predictions')
-plt.xlabel('x')
-plt.ylabel('y')
-plt.legend()
-plt.show()
+많은 조건이 생긴다면
+data = {
+    (25, 1.00, 98.0, 92.0, 0.15): [(0, 1.0), (29, 0.975), (58, 0.965), (86, 0.96), ...]
+}
+이렇게 정해주고
